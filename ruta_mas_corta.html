@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<title>Ruta Más Corta - Dijkstra</title>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<style>
+
+body{
+font-family:Segoe UI;
+background:#eef2f7;
+margin:0;
+}
+
+header{
+background:#34495e;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+section{
+padding:30px;
+max-width:900px;
+margin:auto;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+margin-bottom:20px;
+}
+
+.graph{
+width:700px;
+height:450px;
+}
+
+button{
+padding:10px;
+border:none;
+background:#3498db;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Problema de la Ruta Más Corta</h1>
+</header>
+
+<section>
+
+<div class="card">
+
+<h2>Concepto</h2>
+
+<p>
+El problema de la ruta más corta consiste en encontrar el camino con menor costo entre dos nodos de una red.
+</p>
+
+<p>
+Este problema aparece en:
+</p>
+
+<ul>
+<li>Sistemas de navegación GPS</li>
+<li>Redes de internet</li>
+<li>Rutas de transporte</li>
+<li>Optimización logística</li>
+</ul>
+
+<p>
+Uno de los algoritmos más utilizados es el <b>algoritmo de Dijkstra</b>.
+</p>
+
+</div>
+
+<div class="card">
+
+<h2>Ejercicio Interactivo</h2>
+
+<p>
+Encuentra la ruta más corta entre el nodo A y el nodo F.
+</p>
+
+<button onclick="resolver()">Calcular Ruta Más Corta</button>
+
+<div id="grafica" class="graph"></div>
+
+<p id="resultado"></p>
+
+</div>
+
+</section>
+
+<script>
+
+let nodos={
+A:{x:0,y:0},
+B:{x:2,y:3},
+C:{x:4,y:1},
+D:{x:6,y:4},
+E:{x:7,y:0},
+F:{x:9,y:3}
+}
+
+let aristas=[
+["A","B",4],
+["A","C",2],
+["B","C",1],
+["B","D",5],
+["C","D",8],
+["C","E",10],
+["D","F",2],
+["E","F",3]
+]
+
+function graficar(camino=[]){
+
+let data=[]
+
+aristas.forEach(a=>{
+
+let color="gray"
+
+for(let i=0;i<camino.length-1;i++){
+
+if(
+(camino[i]==a[0] && camino[i+1]==a[1]) ||
+(camino[i]==a[1] && camino[i+1]==a[0])
+){
+
+color="red"
+
+}
+
+}
+
+data.push({
+x:[nodos[a[0]].x,nodos[a[1]].x],
+y:[nodos[a[0]].y,nodos[a[1]].y],
+mode:"lines",
+line:{width:3,color:color},
+showlegend:false
+})
+
+})
+
+let puntos={
+x:Object.values(nodos).map(n=>n.x),
+y:Object.values(nodos).map(n=>n.y),
+text:Object.keys(nodos),
+mode:"markers+text",
+textposition:"top center",
+marker:{size:12}
+}
+
+data.push(puntos)
+
+Plotly.newPlot("grafica",data,{margin:{t:20}})
+
+}
+
+graficar()
+
+function resolver(){
+
+let dist={}
+let prev={}
+let Q=new Set(Object.keys(nodos))
+
+Object.keys(nodos).forEach(n=>{
+dist[n]=Infinity
+})
+
+dist["A"]=0
+
+while(Q.size>0){
+
+let u=[...Q].reduce((a,b)=>dist[a]<dist[b]?a:b)
+
+Q.delete(u)
+
+aristas.forEach(e=>{
+
+if(e[0]==u){
+
+let alt=dist[u]+e[2]
+
+if(alt<dist[e[1]]){
+
+dist[e[1]]=alt
+prev[e[1]]=u
+
+}
+
+}
+
+if(e[1]==u){
+
+let alt=dist[u]+e[2]
+
+if(alt<dist[e[0]]){
+
+dist[e[0]]=alt
+prev[e[0]]=u
+
+}
+
+}
+
+})
+
+}
+
+let camino=[]
+let u="F"
+
+while(u){
+
+camino.unshift(u)
+u=prev[u]
+
+}
+
+graficar(camino)
+
+resultado.innerText="Ruta más corta: "+camino.join(" → ")+" | Costo: "+dist["F"]
+
+}
+
+</script>
+
+</body>
+</html>
